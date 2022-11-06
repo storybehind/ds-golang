@@ -188,6 +188,10 @@ func (avlTree *AvlTree[K]) DeleteMin() (K, bool) {
 	return deletedKey, deleted
 }
 
+func (avlTree *AvlTree[K]) GetRoot() BBSTNode[K] {
+	return avlTree.root
+}
+
 func (avlTree *AvlTree[K]) replaceOrInsert(node *AvlTreeNode[K], key K) (_ *AvlTreeNode[K], _ K, _ bool) {
 	if node == nil {
 		var zero K

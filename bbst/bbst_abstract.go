@@ -17,6 +17,8 @@ type BBST[K any] interface {
 	Delete(key K) (K, bool)
 	DeleteMax() (K, bool)
 	DeleteMin() (K, bool)
+
+	GetRoot() (BBSTNode[K])
 }
 
 type BBSTNode[K any] interface {
@@ -27,6 +29,12 @@ type BBSTNode[K any] interface {
 	GetAugmentedData() any
 	SetAugmentedData(augmentedData any)
 }
+
+type ConcreteTag int
+
+const (
+	AvlTreeTag ConcreteTag = iota
+)
 
 type Less[K any] func(k1, k2 K) bool
 

@@ -1,3 +1,3 @@
-module ds-golang
+module ds
 
 go 1.18
