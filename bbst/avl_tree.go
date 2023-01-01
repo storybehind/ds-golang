@@ -31,6 +31,9 @@ func (node *AvlTreeNode[K]) SetAugmentedData(augmentedData any) {
 	node.augmentedData = augmentedData
 }
 
+func (node *AvlTreeNode[K]) IsInterfaceNil() (bool) {
+	return node == nil
+}
 
 type AvlTree[K any] struct {
 	root                *AvlTreeNode[K]
@@ -241,7 +244,7 @@ func (avlTree *AvlTree[K]) balanceNode(node *AvlTreeNode[K]) *AvlTreeNode[K] {
 		}
 		return avlTree.leftRotate(node)
 	}
-	if nodeHeightDiff < 1 {
+	if nodeHeightDiff < -1 {
 		leftNodeHeightDiff := getHeightDiff(node.left)
 		if leftNodeHeightDiff > 0 {
 			node.left = avlTree.leftRotate(node.left)

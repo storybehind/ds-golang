@@ -28,6 +28,7 @@ type BBSTNode[K any] interface {
 	GetKey() K
 	GetAugmentedData() any
 	SetAugmentedData(augmentedData any)
+	IsInterfaceNil() (bool)
 }
 
 type ConcreteTag int
@@ -55,20 +56,20 @@ const (
 type compare[K any] func(k1, k2 K) int
 
 func search[K any](node BBSTNode[K], key K, typ toSearch, cmp compare[K]) (_ K, _ bool) {
-	if node == nil {
+	if node.IsInterfaceNil() {
 		return
 	}
 
 	switch typ {
 	case searchMin:
 		minNode := node
-		for minNode.GetLeft() != nil {
+		for !minNode.GetLeft().IsInterfaceNil() {
 			minNode = minNode.GetLeft()
 		}
 		return minNode.GetKey(), true
 	case searchMax:
 		maxNode := node
-		for maxNode.GetRight() != nil {
+		for !maxNode.GetRight().IsInterfaceNil() {
 			maxNode = maxNode.GetRight()
 		}
 		return maxNode.GetKey(), true
@@ -76,7 +77,7 @@ func search[K any](node BBSTNode[K], key K, typ toSearch, cmp compare[K]) (_ K, 
 		var greaterKey K
 		hasGreaterKey := false
 		curNode := node
-		for curNode != nil {
+		for !curNode.IsInterfaceNil() {
 			compare := cmp(key, curNode.GetKey())
 			if compare >= 0 {
 				curNode = curNode.GetRight()
@@ -91,7 +92,7 @@ func search[K any](node BBSTNode[K], key K, typ toSearch, cmp compare[K]) (_ K, 
 		var lowerKey K
 		hasLowerKey := false
 		curNode := node
-		for curNode != nil {
+		for !curNode.IsInterfaceNil() {
 			compare := cmp(key, curNode.GetKey())
 			if compare <= 0 {
 				curNode = curNode.GetLeft()
@@ -106,7 +107,7 @@ func search[K any](node BBSTNode[K], key K, typ toSearch, cmp compare[K]) (_ K, 
 		var greaterOrEqualKey K
 		hasGreaterOrEqualKey := false
 		curNode := node
-		for curNode != nil {
+		for !curNode.IsInterfaceNil() {
 			compare := cmp(key, curNode.GetKey())
 			if compare == 0 {
 				greaterOrEqualKey = curNode.GetKey()
@@ -126,7 +127,7 @@ func search[K any](node BBSTNode[K], key K, typ toSearch, cmp compare[K]) (_ K, 
 		var lowerOrEqualKey K
 		hasLowerOrEqualKey := false
 		curNode := node
-		for curNode != nil {
+		for !curNode.IsInterfaceNil() {
 			compare := cmp(key, curNode.GetKey())
 			if compare == 0 {
 				lowerOrEqualKey = curNode.GetKey()
@@ -144,7 +145,7 @@ func search[K any](node BBSTNode[K], key K, typ toSearch, cmp compare[K]) (_ K, 
 		return lowerOrEqualKey, hasLowerOrEqualKey
 	case searchKey:
 		curNode := node
-		for curNode != nil {
+		for !curNode.IsInterfaceNil() {
 			compare := cmp(key, curNode.GetKey())
 			if compare == 0 {
 				return curNode.GetKey(), true
