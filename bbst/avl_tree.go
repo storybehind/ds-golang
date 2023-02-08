@@ -1,5 +1,8 @@
 package bbst
 
+//Node of avl tree that holds a particular key
+//Supports augmentation
+//Maintain left, right and parent pointer for tree traversal
 type AvlTreeNode[K any] struct {
 	left, right, parent *AvlTreeNode[K]
 	key                 K
@@ -7,34 +10,42 @@ type AvlTreeNode[K any] struct {
 	height int64
 }
 
+//Get left node 
 func (node *AvlTreeNode[K]) GetLeft() BBSTNode[K] {
 	return node.left
 }
 
+//Get right node
 func (node *AvlTreeNode[K]) GetRight() BBSTNode[K] {
 	return node.right
 }
 
+//Get parent node
 func (node *AvlTreeNode[K]) GetParent() BBSTNode[K] {
 	return node.parent
 }
 
+//Get key
 func (node *AvlTreeNode[K]) GetKey() K {
 	return node.key
 }
 
+//Get augmented data
 func (node *AvlTreeNode[K]) GetAugmentedData() any {
 	return node.augmentedData
 }
 
+//Set augmented data
 func (node *AvlTreeNode[K]) SetAugmentedData(augmentedData any) {
 	node.augmentedData = augmentedData
 }
 
+//IsInterfaceNil() return true if and only if node is a leaf
 func (node *AvlTreeNode[K]) IsInterfaceNil() (bool) {
 	return node == nil
 }
 
+// Maintains unique set of keys
 type AvlTree[K any] struct {
 	root                *AvlTreeNode[K]
 	less                Less[K]
@@ -43,6 +54,10 @@ type AvlTree[K any] struct {
 	len 				int64
 }
 
+//Returns instance of AvlTree.
+// Less method determines the order of key. 
+// k1 precedes k2 in AvlTree if and only if Less(k1, k2) return true.
+// k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
 func NewAvlTreeByLess[K any](less Less[K]) *AvlTree[K] {
 	return &AvlTree[K]{
 		root: nil,
@@ -61,6 +76,12 @@ func NewAvlTreeByLess[K any](less Less[K]) *AvlTree[K] {
 	}
 }
 
+// Returns instance of AvlTree.
+// Less method determines the order of key. 
+// k1 precedes k2 in AvlTree if and only if Less(k1, k2) return true.
+// k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
+// UpdateAugmentedData method maintains invariant of node's augmentedData as tree performs rotation
+// Efficient in case of easy tree augmentation which depends on node's immediate children
 func NewAvlTreeByLessAndUpdateAugmentedData[K any](less Less[K], updateAugmentedData *UpdateAugmentedData[K]) *AvlTree[K] {
 	return &AvlTree[K]{
 		root: nil,
@@ -84,18 +105,22 @@ func (avlTree *AvlTree[K]) Get(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchKey, avlTree.cmp)
 }
 
+// GetGreater looks for smallest key that is strictly greater than key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
 func (avlTree *AvlTree[K]) GetGreater(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchGreater, avlTree.cmp)
 }
 
+// GetGreaterThanOrEqual looks for smallest key that is greater than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
 func (avlTree *AvlTree[K]) GetGreaterThanOrEqual(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchGreaterThanOrEqual, avlTree.cmp)
 }
 
+// GetLower looks for greatest key that is strictly lower than key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
 func (avlTree *AvlTree[K]) GetLower(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchLower, avlTree.cmp)
 }
 
+// GetLowerThanOrEqual looks for greatest key that is lower than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
 func (avlTree *AvlTree[K]) GetLowerThanOrEqual(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchLowerThanOrEqual, avlTree.cmp)
 }
@@ -135,7 +160,7 @@ const (
 // ReplaceOrInsert adds the given item to the tree.
 // If an item in the tree already equals the given one, it is removed from the tree and returned, and the second return value is true.
 // Otherwise, (zeroValue, false)
-// nil cannot be added to the tree (will panic).
+// nil cannot be added to the tree
 func (avlTree *AvlTree[K]) ReplaceOrInsert(key K) (_ K, _ bool) {
 	var prevKey K
 	var has bool
@@ -191,6 +216,7 @@ func (avlTree *AvlTree[K]) DeleteMin() (K, bool) {
 	return deletedKey, deleted
 }
 
+// Get root node of the tree
 func (avlTree *AvlTree[K]) GetRoot() BBSTNode[K] {
 	return avlTree.root
 }

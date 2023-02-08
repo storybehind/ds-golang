@@ -1,5 +1,6 @@
 package bbst
 
+// Balanced Binary Search Tree interface
 type BBST[K any] interface {
 	Get(key K) (_ K, _ bool)
 	GetGreater(key K) (_ K, _ bool)
@@ -21,6 +22,7 @@ type BBST[K any] interface {
 	GetRoot() (BBSTNode[K])
 }
 
+// Balanced Binary Search Tree Node interface
 type BBSTNode[K any] interface {
 	GetLeft() BBSTNode[K]
 	GetRight() BBSTNode[K]
@@ -31,16 +33,22 @@ type BBSTNode[K any] interface {
 	IsInterfaceNil() (bool)
 }
 
+// ConcreteTag details the type of balanced binary search tree
 type ConcreteTag int
 
 const (
 	AvlTreeTag ConcreteTag = iota
 )
 
+//k1 precedes k2 in bbst if and only if Less(k1, k2) return true
 type Less[K any] func(k1, k2 K) bool
 
+//Maintains invariant of node's augmentedData as tree performs rotation
+//Can be as simple as easy tree augmentation which depends on node's immediate children
+//Or can be taken to node's entire subtree
 type UpdateAugmentedData[K any] func(node BBSTNode[K])
 
+// toSearch details the type of search in the tree 
 type toSearch int
 
 const (
