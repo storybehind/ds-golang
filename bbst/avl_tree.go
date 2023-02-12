@@ -3,6 +3,8 @@ package bbst
 //Node of avl tree that holds a particular key
 //Supports augmentation
 //Maintain left, right and parent pointer for tree traversal
+//parent of root node is nil
+//left and right pointer of leaf nodes are nil
 type AvlTreeNode[K any] struct {
 	left, right, parent *AvlTreeNode[K]
 	key                 K
@@ -160,7 +162,6 @@ const (
 // ReplaceOrInsert adds the given item to the tree.
 // If an item in the tree already equals the given one, it is removed from the tree and returned, and the second return value is true.
 // Otherwise, (zeroValue, false)
-// nil cannot be added to the tree
 func (avlTree *AvlTree[K]) ReplaceOrInsert(key K) (_ K, _ bool) {
 	var prevKey K
 	var has bool
