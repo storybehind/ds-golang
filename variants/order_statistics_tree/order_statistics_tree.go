@@ -10,7 +10,7 @@ type OrderStatisticsTree[K any] struct {
 type subtreeSize int64
 
 func getSubtreeSize[K any](node bbst.BBSTNode[K]) subtreeSize {
-	if node != nil {
+	if !node.IsInterfaceNil() {
 		return node.GetAugmentedData().(subtreeSize)
 	}
 	return subtreeSize(0)
@@ -39,7 +39,7 @@ func New[K any](less bbst.Less[K], tag bbst.ConcreteTag) *OrderStatisticsTree[K]
 func (ost *OrderStatisticsTree[K]) Rank(key K) int64 {
 	rank := int64(0)
 	node := ost.GetRoot()
-	for node != nil {
+	for !node.IsInterfaceNil() {
 		cmp := ost.compare(key, node.GetKey())
 		switch cmp {
 			case 0:
@@ -56,10 +56,10 @@ func (ost *OrderStatisticsTree[K]) Rank(key K) int64 {
 }
 
 //return key element whose rank(key) = r. 
-// Ex : for r == 0 , return minimum key. If r >= ost.Len(), return zeroValue, false
+// Ex : for r == 0 , return minimum key. If r >= Len(), return zeroValue, false
 func (ost *OrderStatisticsTree[K]) Select(r int64) (_ K, _ bool) {
 	node := ost.GetRoot()
-	for node != nil {
+	for !node.IsInterfaceNil() {
 		rank := int64(getSubtreeSize(node.GetLeft()))
 		if rank == r {
 			return node.GetKey(), true

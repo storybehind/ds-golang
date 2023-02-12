@@ -1,9 +1,12 @@
-package binaryheap
+package priorityqueue_test
 
-import "testing"
+import (
+	priorityqueue "ds/priority_queue"
+	"testing"
+)
 
 func TestBinaryHeap(t *testing.T) {
-	minHeap := New(func (v1, v2 int) bool {
+	minHeap := priorityqueue.NewBinaryHeap(func (v1, v2 int) bool {
 		return v1 < v2
 	})
 	checkLen(t, minHeap, 0)
@@ -51,27 +54,27 @@ func TestBinaryHeap(t *testing.T) {
 	checkLen(t, minHeap, 0)
 }
 
-func checkLen[V any](t *testing.T, bh *BinaryHeap[V], len int64) {
+func checkLen[V any](t *testing.T, bh *priorityqueue.BinaryHeap[V], len int64) {
 	if n := bh.Len(); n != len {
 		t.Errorf("mh.Len() = %d, want= %d", n, len)
 	}	
 }
 
-func checkTop[V comparable](t *testing.T, bh *BinaryHeap[V], topExpected V) {
+func checkTop[V comparable](t *testing.T, bh *priorityqueue.BinaryHeap[V], topExpected V) {
 	topFoundNode := bh.Top();
 	if topExpected != topFoundNode.GetValue() {
 		t.Errorf("topFound = %v, topExpected = %v", topFoundNode.GetValue(), topExpected)
 	}
 }
 
-func checkPop[V comparable](t *testing.T, bh *BinaryHeap[V], expected V) {
+func checkPop[V comparable](t *testing.T, bh *priorityqueue.BinaryHeap[V], expected V) {
 	found := bh.Pop()
 	if found != expected {
 		t.Errorf("found = %v, expected = %v", found, expected)
 	}
 }
 
-func checkRemove[V comparable](t *testing.T, bh *BinaryHeap[V], bhn *BinaryHeapNode[V]) {
+func checkRemove[V comparable](t *testing.T, bh *priorityqueue.BinaryHeap[V], bhn *priorityqueue.BinaryHeapNode[V]) {
 	val := bh.Remove(bhn)
 	if val != bhn.GetValue() {
 		t.Errorf("val = %v, bhn.GetValue() = %v ; val & bhn.GetValue() must match after removal", val, bhn.GetValue())
