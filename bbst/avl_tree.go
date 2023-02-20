@@ -42,7 +42,7 @@ func (node *AvlTreeNode[K]) SetAugmentedData(augmentedData any) {
 	node.augmentedData = augmentedData
 }
 
-//IsInterfaceNil() return true if and only if node is a leaf
+//IsInterfaceNil() return true if node is a nil pointer
 func (node *AvlTreeNode[K]) IsInterfaceNil() (bool) {
 	return node == nil
 }
@@ -102,27 +102,27 @@ func NewAvlTreeByLessAndUpdateAugmentedData[K any](less Less[K], updateAugmented
 	}
 }
 
-// Get looks for the key item in the tree, returning it. It returns (zeroValue, false) if unable to find that item
+// Get looks for the key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (avlTree *AvlTree[K]) Get(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchKey, avlTree.cmp)
 }
 
-// GetGreater looks for smallest key that is strictly greater than key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
+// GetGreater looks for smallest key that is strictly greater than key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (avlTree *AvlTree[K]) GetGreater(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchGreater, avlTree.cmp)
 }
 
-// GetGreaterThanOrEqual looks for smallest key that is greater than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
+// GetGreaterThanOrEqual looks for smallest key that is greater than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (avlTree *AvlTree[K]) GetGreaterThanOrEqual(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchGreaterThanOrEqual, avlTree.cmp)
 }
 
-// GetLower looks for greatest key that is strictly lower than key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
+// GetLower looks for greatest key that is strictly lower than key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (avlTree *AvlTree[K]) GetLower(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchLower, avlTree.cmp)
 }
 
-// GetLowerThanOrEqual looks for greatest key that is lower than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that item
+// GetLowerThanOrEqual looks for greatest key that is lower than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (avlTree *AvlTree[K]) GetLowerThanOrEqual(key K) (_ K, _ bool) {
 	return search[K](avlTree.root, key, searchLowerThanOrEqual, avlTree.cmp)
 }
@@ -133,19 +133,19 @@ func (avlTree *AvlTree[K]) Has(key K) bool {
 	return has
 }
 
-// Max returns the largest item in the tree, or (zeroValue, false) if the tree is empty
+// Max returns the largest key in the tree, or (zeroValue, false) if the tree is empty
 func (avlTree *AvlTree[K]) Max() (_ K, _ bool) {
 	var zero K
 	return search[K](avlTree.root, zero, searchMax, avlTree.cmp)
 }
 
-// Min returns the smallest item in the tree, or (zeroValue, false) if the tree is empty
+// Min returns the smallest key in the tree, or (zeroValue, false) if the tree is empty
 func (avlTree *AvlTree[K]) Min() (_ K, _ bool) {
 	var zero K
 	return search[K](avlTree.root, zero, searchMin, avlTree.cmp)
 }
 
-// Len returns the number of items currently in the tree.
+// Len returns the number of keys currently in the tree.
 func (avlTree *AvlTree[K]) Len() int64 {
 	return avlTree.len
 }
@@ -159,8 +159,8 @@ const (
 	removeMax                  // removes largest item in the subtree
 )
 
-// ReplaceOrInsert adds the given item to the tree.
-// If an item in the tree already equals the given one, it is removed from the tree and returned, and the second return value is true.
+// ReplaceOrInsert adds the given key to the tree.
+// If a key in the tree already equals the given one, it is removed from the tree and returned, and the second return value is true.
 // Otherwise, (zeroValue, false)
 func (avlTree *AvlTree[K]) ReplaceOrInsert(key K) (_ K, _ bool) {
 	var prevKey K
