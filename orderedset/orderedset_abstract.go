@@ -48,6 +48,14 @@ type BBSTNode[K any] interface {
 	GetKey() K
 }
 
+// Returns instance of Red-Black Tree.
+// Less method determines the order of key.
+// k1 precedes k2 if and only if Less(k1, k2) return true.
+// k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
+func New[K any](less func(k1, k2 K) bool) *RbTree[K] {
+	return NewRbTree[K](less)
+}
+
 type compare[K any] func(k1, k2 K) int
 
 func searchNode[K any](node BBSTNode[K], key K, cmp compare[K], sentinel BBSTNode[K]) BBSTNode[K] {
