@@ -1,3 +1,4 @@
-module ds
+module github.com/storybehind/gocontainer
 
-go 1.18
+go 1.20
+
