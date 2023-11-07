@@ -2,10 +2,13 @@ package orderedmap
 
 import "github.com/storybehind/gocontainer/orderedset"
 
+// Container to maintain key value pairs where all keys are unique
+// Supports insertion, deletion and search operation in O(log n) time where n is number of keys in the map
 type OrderedMap[K, V any] struct {
 	os orderedset.OrderedSetI[KeyValuePair[K, V]]
 }
 
+// Stores key and value. Use GetKey() and GetValue() to retrieve key and value respectively
 type KeyValuePair[K, V any] struct {
 	key   K
 	value V
@@ -33,6 +36,11 @@ const (
 	RbTreeTag
 )
 
+// Returns instance of OrderedMap
+// Less method determines the order of key.
+// k1 precedes k2 if and only if Less(k1, k2) return true.
+// k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
+// By  default, underlying set structure is RbTree.
 func New[K, V any](less func(k1, k2 K) bool) *OrderedMap[K, V] {
 	return &OrderedMap[K, V]{
 		os: orderedset.NewRbTree[KeyValuePair[K, V]](func(k1, k2 KeyValuePair[K, V]) bool {
@@ -41,6 +49,11 @@ func New[K, V any](less func(k1, k2 K) bool) *OrderedMap[K, V] {
 	}
 }
 
+// Returns instance of OrderedMap
+// Less method determines the order of key.
+// k1 precedes k2 if and only if Less(k1, k2) return true.
+// k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
+// tag specifies underlying set structure. Can be AvlTreeTag or RbTreeTag.
 func NewByTag[K, V any](less func(k1, k2 K) bool, tag Tag) *OrderedMap[K, V] {
 	switch tag {
 	case AvlTreeTag:
@@ -153,7 +166,7 @@ func (om *OrderedMap[K, V]) Begin() *OrderedMapIterator[K, V] {
 	}
 }
 
-// Calling Next() moves the iterator to the next least node and returns its key
+// Calling Next() moves the iterator to the next greater node and returns its KeyValuePair
 // If Next() is called on last key(or greatest key), it returns (zeroValue, false)
 func (omItr *OrderedMapIterator[K, V]) Next() (_ KeyValuePair[K, V], _ bool) {
 	return omItr.forwardIterator.Next()
@@ -164,8 +177,8 @@ func (omItr *OrderedMapIterator[K, V]) Key() (_ KeyValuePair[K, V], _ bool) {
 	return omItr.forwardIterator.Key()
 }
 
-// Deletes the key the pointed by iterator, moves the iterator to next least key.
-// Returns the next least key if it's present. Otherwise, returns (zeroValue, false)
+// Deletes the key the pointed by iterator, moves the iterator to next greater node.
+// Returns the next greater KeyValuePair if it's present. Otherwise, returns (zeroValue, false)
 // panics on calling Remove() in empty map or an iterator has completed traversing all the keys
 func (omItr *OrderedMapIterator[K, V]) Remove() (_ KeyValuePair[K, V], _ bool) {
 	return omItr.forwardIterator.Remove()
@@ -183,7 +196,7 @@ func (om *OrderedMap[K, V]) Rbegin() *ReverseOrderedMapIterator[K, V] {
 	}
 }
 
-// Calling Prev() moves the reverse iterator to the next greatest node and returns its key
+// Calling Prev() moves the reverse iterator to the next smaller node and returns its KeyValuePair
 // If Prev() is called on last key (or smallest key), it returns (zeroValue, false)
 func (omRitr *ReverseOrderedMapIterator[K, V]) Prev() (_ KeyValuePair[K, V], _ bool) {
 	return omRitr.reverseIterator.Prev()
@@ -194,8 +207,8 @@ func (omRitr *ReverseOrderedMapIterator[K, V]) Key() (_ KeyValuePair[K, V], _ bo
 	return omRitr.reverseIterator.Key()
 }
 
-// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next greatest key.
-// Returns the next greatest key if it's present. Otherwise, returns (zeroValue, false)
+// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next smaller key.
+// Returns the next smaller KeyValuePair if it's present. Otherwise, returns (zeroValue, false)
 // panics on calling Remove() in empty map or an iterator has completed traversing all the keys
 func (omRitr *ReverseOrderedMapIterator[K, V]) Remove() (_ KeyValuePair[K, V], _ bool) {
 	return omRitr.reverseIterator.Remove()

@@ -28,7 +28,7 @@ func TestBinaryHeap(t *testing.T) {
 	checkLen(t, minHeap, 4)
 	checkTop(t, minHeap, 2)
 
-	node5.SetValue(1)
+	minHeap.Update(node5, 1)
 	checkLen(t, minHeap, 4)
 	checkTop(t, minHeap, 1)
 

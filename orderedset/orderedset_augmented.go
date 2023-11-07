@@ -1,10 +1,15 @@
 package orderedset
 
+// Balanced Binary Search Node interface with support for augmentation
 type BBSTNodeAugmented[K, A any] interface {
 	BBSTNode[K]
+	// Returns left augmented node
 	GetLeftAugmented() BBSTNodeAugmented[K, A]
+	// Returns right augmented node
 	GetRightAugmented() BBSTNodeAugmented[K, A]
+	// Returns parent augmented node
 	GetParentAugmented() BBSTNodeAugmented[K, A]
+	// Returns node's augmented value
 	GetAugmentedValue() A
 }
 
@@ -47,6 +52,10 @@ func (rbTreeNodeAugmented *rbTreeNodeAugmented[K, A]) GetAugmentedValue() A {
 	return rbTreeNodeAugmented.augmentedValue
 }
 
+// Maintains unique set of keys and invariant of node's augmented value. 
+// Supports insertion, deletion of keys in O(t * log n) time where n is number of keys in the set and t is time required to maintain node's invariant.
+// Search operation takes O(log n) time.
+// Can be embedded to support additional functionalities
 type RbTreeAugmented[K, A any] struct {
 	root     *rbTreeNodeAugmented[K, A]
 	sentinel *rbTreeNodeAugmented[K, A]
@@ -60,6 +69,10 @@ type RbTreeAugmented[K, A any] struct {
 // Less method determines the order of key.
 // k1 precedes k2 if and only if Less(k1, k2) return true.
 // k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
+
+// updateAugmentValue maintains invariants of node's augmented value.
+// First argument gives node pointer whose invariant has to be maintained.
+// Second argument gives sentinel node pointer (can be thought of nil leaf nodes or root's parent)
 func NewRbTreeAugmented[K, A any](less func(k1, k2 K) bool, updateAugmentValue func(BBSTNodeAugmented[K, A], BBSTNodeAugmented[K, A]) A) *RbTreeAugmented[K, A] {
 	sentinel := &rbTreeNodeAugmented[K, A] {
 		color: BLACK,
@@ -150,10 +163,12 @@ func (rbTreeAugmented *RbTreeAugmented[K, A]) Len() int64 {
 	return rbTreeAugmented.len
 }
 
+// Returns root node of the tree. 
 func (rbTreeAugmented *RbTreeAugmented[K, A]) GetRoot() BBSTNodeAugmented[K, A] {
 	return rbTreeAugmented.root
 }
 
+// Returns sentinel node of the tree (can be thought of nil leaf nodes or root's parent)
 func (rbTreeAugmented *RbTreeAugmented[K, A]) GetSentinel() BBSTNodeAugmented[K, A] {
 	return rbTreeAugmented.sentinel
 }
@@ -427,7 +442,7 @@ func (rbTreeAugmented *RbTreeAugmented[K, A]) Begin() OrderedSetForwardIterator[
 	}
 }
 
-// Calling Next() moves the iterator to the next least node and returns its key
+// Calling Next() moves the iterator to the next greater node and returns its key
 // If Next() is called on last key(or greatest key), it returns (zeroValue, false)
 func (rbAugmentedIterator *RbAugmentedIterator[K, A]) Next() (_ K, _ bool) {
 	if rbAugmentedIterator.next == rbAugmentedIterator.rbTreeAugmented.sentinel {
@@ -448,8 +463,8 @@ func (rbAugmentedIterator *RbAugmentedIterator[K, A]) Key() (_ K, _ bool) {
 	return
 }
 
-// Deletes the key the pointed by iterator, moves the iterator to next least key.
-// Returns the next least key if it's present. Otherwise, returns (zeroValue, false)
+// Deletes the key the pointed by iterator, moves the iterator to next greater key.
+// Returns the next greater key if it's present. Otherwise, returns (zeroValue, false)
 // panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 func (rbAugmentedIterator *RbAugmentedIterator[K, A]) Remove() (_ K, _ bool) {
 	var todelete *rbTreeNodeAugmented[K, A] = rbAugmentedIterator.next
@@ -477,7 +492,7 @@ func (rbTreeAugmented *RbTreeAugmented[K, A]) Rbegin() OrderedSetReverseIterator
 	}
 }
 
-// Calling Prev() moves the reverse iterator to the next greatest node and returns its key
+// Calling Prev() moves the reverse iterator to the next smaller node and returns its key
 // If Prev() is called on last key (or smallest key), it returns (zeroValue, false)
 func (reverseRbAugmentedIterator *ReverseRbAugmentedIterator[K, A]) Prev() (_ K, _ bool) {
 	var rbTreeAugmented *RbTreeAugmented[K, A] = reverseRbAugmentedIterator.rbTreeAugmented
@@ -500,8 +515,8 @@ func (reverseRbAugmentedIterator *ReverseRbAugmentedIterator[K, A]) Key() (_ K, 
 	return
 }
 
-// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next greatest key.
-// Returns the next greatest key if it's present. Otherwise, returns (zeroValue, false)
+// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next smaller key.
+// Returns the next smaller key if it's present. Otherwise, returns (zeroValue, false)
 // panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 func (reverseRbAugmentedIterator *ReverseRbAugmentedIterator[K, A]) Remove() (_ K, _ bool) {
 	var todelete *rbTreeNodeAugmented[K, A] = reverseRbAugmentedIterator.prev

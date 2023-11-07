@@ -28,7 +28,8 @@ func (node *avlTreeNode[K]) GetKey() K {
 	return node.key
 }
 
-// Maintains unique set of keys
+// Maintains unique set of keys.
+// Supports insertion, deletion and search operation in O(log n) time where n is number of keys in the set
 type AvlTree[K any] struct {
 	root     *avlTreeNode[K]
 	sentinel *avlTreeNode[K]
@@ -37,7 +38,7 @@ type AvlTree[K any] struct {
 	len      int64
 }
 
-//Returns instance of AvlTree.
+// Returns instance of AvlTree.
 // Less method determines the order of key.
 // k1 precedes k2 in AvlTree if and only if Less(k1, k2) return true.
 // k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
@@ -153,7 +154,7 @@ func (avlTree *AvlTree[K]) ReplaceOrInsert(key K) (_ K, _ bool) {
 	return prevKey, has
 }
 
-// Delete removes an item equal to the passed in item from the tree, returning it. If no such item exists, returns (zeroValue, false)
+// Delete removes a key equal to the passed in key from the tree, returning it. If no such key exists, returns (zeroValue, false)
 func (avlTree *AvlTree[K]) Delete(key K) (K, bool) {
 	var deletedKey K
 	var deleted bool
@@ -165,7 +166,7 @@ func (avlTree *AvlTree[K]) Delete(key K) (K, bool) {
 	return deletedKey, deleted
 }
 
-// DeleteMax removes the largest item in the tree and returns it. If no such item exists, returns (zeroValue, false)
+// DeleteMax removes the largest key in the tree and returns it. If no such item exists, returns (zeroValue, false)
 func (avlTree *AvlTree[K]) DeleteMax() (K, bool) {
 	var deletedKey K
 	var deleted bool
@@ -178,7 +179,7 @@ func (avlTree *AvlTree[K]) DeleteMax() (K, bool) {
 	return deletedKey, deleted
 }
 
-// DeleteMin removes the smallest item in the tree and returns it. If no such item exists, returns (zeroValue, false)
+// DeleteMin removes the smallest key in the tree and returns it. If no such item exists, returns (zeroValue, false)
 func (avlTree *AvlTree[K]) DeleteMin() (K, bool) {
 	var deletedKey K
 	var deleted bool
@@ -272,15 +273,17 @@ func (avlTree AvlTree[K]) delete(node *avlTreeNode[K], key K, typ toRemove) (_ *
 			deletedKey = node.key
 			deleted = true
 			if node.left != avlTree.sentinel {
-				var zero, maxKey K
-				node.left, maxKey, _ = avlTree.delete(node.left, zero, removeMax)
-				node.left.parent = node
-				node.key = maxKey
+				var zero K
+				leftMaxNode := getMaxNode[K](node.left, avlTree.sentinel).(*avlTreeNode[K])
+				leftMaxNode.left, _, _ = avlTree.delete(node.left, zero, removeMax)
+				leftMaxNode.right = node.right
+				node = leftMaxNode
 			} else if node.right != avlTree.sentinel {
-				var zero, minKey K
-				node.right, minKey, _ = avlTree.delete(node.right, zero, removeMin)
-				node.right.parent = node
-				node.key = minKey
+				var zero K
+				rightMinNode := getMinNode[K](node.right, avlTree.sentinel).(*avlTreeNode[K])
+				rightMinNode.right, _, _ = avlTree.delete(node.right, zero, removeMin)
+				rightMinNode.left = node.left
+				node = rightMinNode
 			} else {
 				return avlTree.sentinel, node.key, true
 			}
@@ -298,7 +301,6 @@ func (avlTree AvlTree[K]) delete(node *avlTreeNode[K], key K, typ toRemove) (_ *
 	return avlTree.balanceNode(node), deletedKey, deleted
 }
 
-// panics if node is either nil or sentinel
 func getHeightDiff[K any](node *avlTreeNode[K]) int64 {
 	return node.right.height - node.left.height
 }
@@ -343,7 +345,7 @@ type AvlIterator[K any] struct {
 	avlTree *AvlTree[K]
 }
 
-// Returns an iterator pointing to least key node in the tree.
+// Returns an iterator pointing to smallest key node in the tree.
 // Used to iterate keys in the ascending order.
 func (avlTree *AvlTree[K]) Begin() OrderedSetForwardIterator[K] {
 	var next *avlTreeNode[K] = avlTree.root
@@ -356,7 +358,7 @@ func (avlTree *AvlTree[K]) Begin() OrderedSetForwardIterator[K] {
 	}
 }
 
-// Calling Next() moves the iterator to the next least node and returns its key
+// Calling Next() moves the iterator to the next greater node and returns its key
 // If Next() is called on last key(or greatest key), it returns (zeroValue, false)
 func (avlIterator *AvlIterator[K]) Next() (_ K, _ bool) {
 	if avlIterator.next == avlIterator.avlTree.sentinel {
@@ -377,8 +379,8 @@ func (avlIterator *AvlIterator[K]) Key() (_ K, _ bool) {
 	return
 }
 
-// Deletes the key the pointed by iterator, moves the iterator to next least key.
-// Returns the next least key if it's present. Otherwise, returns (zeroValue, false)
+// Deletes the key the pointed by iterator, moves the iterator to next greater key.
+// Returns the next greater key if it's present. Otherwise, returns (zeroValue, false)
 // panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 func (avlIterator *AvlIterator[K]) Remove() (_ K, _ bool) {
 	var todelete *avlTreeNode[K] = avlIterator.next
@@ -406,7 +408,7 @@ func (avlTree *AvlTree[K]) Rbegin() OrderedSetReverseIterator[K] {
 	}
 }
 
-// Calling Prev() moves the reverse iterator to the next greatest node and returns its key
+// Calling Prev() moves the reverse iterator to the next smaller node and returns its key
 // If Prev() is called on last key (or smallest key), it returns (zeroValue, false)
 func (reverseAvlIterator *ReverseAvlIterator[K]) Prev() (_ K, _ bool) {
 	if reverseAvlIterator.prev == reverseAvlIterator.avlTree.sentinel {
@@ -427,8 +429,8 @@ func (reverseAvlIterator *ReverseAvlIterator[K]) Key() (_ K, _ bool) {
 	return
 }
 
-// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next greatest key.
-// Returns the next greatest key if it's present. Otherwise, returns (zeroValue, false)
+// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next smaller key.
+// Returns the next smaller key if it's present. Otherwise, returns (zeroValue, false)
 // panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 func (reverseAvlIterator *ReverseAvlIterator[K]) Remove() (_ K, _ bool) {
 	var todelete *avlTreeNode[K] = reverseAvlIterator.prev

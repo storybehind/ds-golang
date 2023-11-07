@@ -1,28 +1,26 @@
 package priorityqueue
 
+// Binary heap node 
 type BinaryHeapNode[V any] struct {
 	index      int64
 	binaryHeap *BinaryHeap[V]
 	value      V
 }
 
+// Returns node's value
 func (bhn *BinaryHeapNode[V]) GetValue() V {
 	return bhn.value
 }
 
-func (bhn *BinaryHeapNode[V]) SetValue(newValue V) {
-	bhn.value = newValue
-	if bhn.binaryHeap != nil {
-		bhn.binaryHeap.sift(bhn.index)
-	}
-}
-
+// Implements priorityqueue with Push, Pop, Top, Update and Remove operations
 type BinaryHeap[V any] struct {
 	nodes        []*BinaryHeapNode[V]
 	priorityFunc func(v1, v2 V) bool
 	length       int64
 }
 
+// Returns instance of BinaryHeap. 
+// v1 has higher priority than v2 if priorityFunc(v1, v2) returns true
 func NewBinaryHeap[V any](priorityFunc func(v1, v2 V) bool) *BinaryHeap[V] {
 	return &BinaryHeap[V]{
 		nodes:        make([]*BinaryHeapNode[V], 1),
@@ -31,6 +29,8 @@ func NewBinaryHeap[V any](priorityFunc func(v1, v2 V) bool) *BinaryHeap[V] {
 	}
 }
 
+// Insert value into the binary heap and returns node's pointer to pushed value.
+// Takes O(log n) time where n is number of values in the queue.
 func (bh *BinaryHeap[V]) Push(value V) *BinaryHeapNode[V] {
 	newHeapNode := &BinaryHeapNode[V]{
 		index:      int64(len(bh.nodes)),
@@ -43,14 +43,17 @@ func (bh *BinaryHeap[V]) Push(value V) *BinaryHeapNode[V] {
 	return newHeapNode
 }
 
+// Returns node's pointer of highest priority value. Panics if binary heap is empty. Takes O(1) time.
 func (bh *BinaryHeap[V]) Top() (*BinaryHeapNode[V]) {
 	return bh.nodes[1]
 }
 
+// Remove highest priority value and returns it. Panics if binary heap is empty. Takes O(log n) time where n is number of values in the queue.
 func (bh *BinaryHeap[V]) Pop() V {
 	return bh.Remove(bh.nodes[1])
 }
 
+// Deletes node in binary heap. Takes O(log n) time where n is number of values in the queue.
 func (bh *BinaryHeap[V]) Remove(node *BinaryHeapNode[V]) V {
 	if node.binaryHeap != bh {
 		return node.value
@@ -75,6 +78,17 @@ func (bh *BinaryHeap[V]) Remove(node *BinaryHeapNode[V]) V {
 	return node.value
 }
 
+// Update node's value to newValue. Takes O(log n) time where n is number of values in the queue.
+func (bh *BinaryHeap[V]) Update(node *BinaryHeapNode[V], newValue V) {
+	if node.binaryHeap != bh {
+		return
+	}
+	node.value = newValue
+	bh.sift(node.index)
+}
+
+
+// Returns number of values currently in the queue
 func (bh *BinaryHeap[V]) Len() int64 {
 	return bh.length
 }

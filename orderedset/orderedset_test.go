@@ -243,11 +243,9 @@ func testOrderedSetReverseIterator(t *testing.T, osi orderedset.OrderedSetI[int]
 	for el, has := ritr.Key(); has; {
 		if el == 1 || el == 2 || el == 5 {
 			el, has = ritr.Remove()
-			t.Logf("el: %v, has: %v", el, has)
 			continue
 		}
 		el, has = ritr.Prev()
-		t.Logf("el: %v, has: %v", el, has)
 	}
 	if osi.Len() != 2 {
 		t.Errorf("Exp Len: 2, but found: %v", osi.Len())

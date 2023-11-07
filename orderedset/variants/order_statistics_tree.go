@@ -2,6 +2,8 @@ package variants
 
 import "github.com/storybehind/gocontainer/orderedset"
 
+// Maintains unique set of keys.
+// Supports insertion, deletion, search, rank and select operations in O(log n) time where n is number of keys in the set
 type OrderStatisticsTree[K any] struct {
 	*orderedset.RbTreeAugmented[K, int64]
 	less func(K, K) bool
