@@ -1,46 +1,26 @@
 package orderedset
 
-type rbTreeNode[K Less[K]] struct {
+type rbTreeNode[K any] struct {
 	left, right, parent *rbTreeNode[K]
 	key                 K
 	color               color
 }
 
-// func (node *rbTreeNode[K]) getLeft() binarySearchTreeNode[K] {
-// 	return node.left
-// }
+func (rbTreeNode *rbTreeNode[K]) GetLeft() BBSTNode[K] {
+	return rbTreeNode.left
+}
 
-// func (node *rbTreeNode[K]) setLeft(value binarySearchTreeNode[K]) {
-// 	node.left = value.(*rbTreeNode[K])
-// }
+func (rbTreeNode *rbTreeNode[K]) GetRight() BBSTNode[K] {
+	return rbTreeNode.right
+}
 
-// func (node *rbTreeNode[K]) getRight() binarySearchTreeNode[K] {
-// 	return node.right
-// }
+func (rbTreeNode *rbTreeNode[K]) GetParent() BBSTNode[K] {
+	return rbTreeNode.parent
+}
 
-// func (node *rbTreeNode[K]) setRight(value binarySearchTreeNode[K]) {
-// 	node.right = value.(*rbTreeNode[K])
-// }
-
-// func (node *rbTreeNode[K]) getParent() binarySearchTreeNode[K] {
-// 	return node.parent
-// }
-
-// func (node *rbTreeNode[K]) setParent(value binarySearchTreeNode[K]) {
-// 	node.parent = value.(*rbTreeNode[K])
-// }
-
-// func (node *rbTreeNode[K]) getKey() K {
-// 	return node.key
-// }
-
-// func (node *rbTreeNode[K]) setKey(value K) {
-// 	node.key = value
-// }
-
-// func (node *rbTreeNode[K]) isNodeNil() bool {
-// 	return node == nil
-// }
+func (rbTreeNode *rbTreeNode[K]) GetKey() K {
+	return rbTreeNode.key
+}
 
 // color type details color of a node
 type color byte
@@ -51,10 +31,11 @@ const (
 )
 
 // Maintains unique set of keys
-type RbTree[K Less[K]] struct {
+type RbTree[K any] struct {
 	root     *rbTreeNode[K]
 	sentinel *rbTreeNode[K]
-	// end *RbIterator[K]
+	less     func(k1, k2 K) bool
+	cmp      compare[K]
 	len      int64
 }
 
@@ -62,202 +43,88 @@ type RbTree[K Less[K]] struct {
 // Less method determines the order of key.
 // k1 precedes k2 if and only if Less(k1, k2) return true.
 // k1 equals k2 if and only if !Less(k1, k2) && !Less(k2, k1) holds true.
-func NewRbTree[K Less[K]]() *RbTree[K] {
+func NewRbTree[K any](less func(k1, k2 K) bool) *RbTree[K] {
+	sentinel := &rbTreeNode[K]{
+		color: BLACK,
+	}
 	return &RbTree[K]{
-		root: nil,
-		sentinel: &rbTreeNode[K]{
-			color: BLACK,
+		root:     sentinel,
+		sentinel: sentinel,
+		less:     less,
+		cmp: func(k1, k2 K) int {
+			if less(k1, k2) {
+				return -1
+			}
+			if less(k2, k1) {
+				return 1
+			}
+			return 0
 		},
-		// end: &RbIterator[K]{},
 		len: 0,
 	}
 }
 
 // Get looks for the key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (rbTree *RbTree[K]) Get(key K) (_ K, _ bool) {
-	if rbTree.root == nil {
-		return
-	}
-	var node *rbTreeNode[K] = rbTree.searchNode(rbTree.root, key)
+	var node BBSTNode[K] = searchNode[K](rbTree.root, key, rbTree.cmp, rbTree.sentinel)
 	if node != nil {
-		return node.key, true
+		return node.GetKey(), true
 	}
 	return
-}
-
-func (rbTree *RbTree[K]) searchNode(node *rbTreeNode[K], key K) *rbTreeNode[K] {
-	var curNode *rbTreeNode[K] = node
-	for curNode != rbTree.sentinel {
-		compare := cmp(key, curNode.key)
-		if compare == 0 {
-			return curNode
-		}
-		if compare == -1 {
-			curNode = curNode.left
-		} else {
-			curNode = curNode.right
-		}
-	}
-	return nil
 }
 
 // GetGreater looks for smallest key that is strictly greater than key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (rbTree *RbTree[K]) GetGreater(key K) (_ K, _ bool) {
-	if rbTree.root == nil {
-		return
-	}
-	var greaterNode *rbTreeNode[K] = rbTree.searchGreaterNode(rbTree.root, key)
+	var greaterNode BBSTNode[K] = searchGreaterNode[K](rbTree.root, key, rbTree.cmp, rbTree.sentinel)
 	if greaterNode != nil {
-		return greaterNode.key, true
+		return greaterNode.GetKey(), true
 	}
 	return
-}
-
-func (rbTree *RbTree[K]) searchGreaterNode(node *rbTreeNode[K], key K) *rbTreeNode[K] {
-	var greaterNode *rbTreeNode[K]
-	var curNode *rbTreeNode[K] = node
-	for curNode != rbTree.sentinel {
-		compare := cmp(key, curNode.key)
-		if compare >= 0 {
-			curNode = curNode.right
-			continue
-		}
-		greaterNode = curNode
-		curNode = curNode.left
-	}
-	return greaterNode
 }
 
 // GetGreaterThanOrEqual looks for smallest key that is greater than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (rbTree *RbTree[K]) GetGreaterThanOrEqual(key K) (_ K, _ bool) {
-	if rbTree.root == nil {
-		return
-	}
-	var greaterThanOrEqualNode *rbTreeNode[K] = rbTree.searchGreaterThanOrEqualNode(rbTree.root, key)
+	var greaterThanOrEqualNode BBSTNode[K] = searchGreaterThanOrEqualNode[K](rbTree.root, key, rbTree.cmp, rbTree.sentinel)
 	if greaterThanOrEqualNode != nil {
-		return greaterThanOrEqualNode.key, true
+		return greaterThanOrEqualNode.GetKey(), true
 	}
 	return
-}
-
-func (rbTree *RbTree[K]) searchGreaterThanOrEqualNode(node *rbTreeNode[K], key K) *rbTreeNode[K] {
-	var greaterThanOrEqualKeyNode *rbTreeNode[K]
-	var curNode *rbTreeNode[K] = node
-	for curNode != rbTree.sentinel {
-		compare := cmp(key, curNode.key)
-		if compare == 0 {
-			greaterThanOrEqualKeyNode = curNode
-			break
-		}
-		if compare == 1 {
-			curNode = curNode.right
-			continue
-		}
-		greaterThanOrEqualKeyNode = curNode
-		curNode = curNode.left
-	}
-	return greaterThanOrEqualKeyNode
 }
 
 // GetLower looks for greatest key that is strictly lower than key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (rbTree *RbTree[K]) GetLower(key K) (_ K, _ bool) {
-	if rbTree.root == nil {
-		return
-	}
-	var lowerNode *rbTreeNode[K] = rbTree.searchLowerNode(rbTree.root, key)
+	var lowerNode BBSTNode[K] = searchLowerNode[K](rbTree.root, key, rbTree.cmp, rbTree.sentinel)
 	if lowerNode != nil {
-		return lowerNode.key, true
+		return lowerNode.GetKey(), true
 	}
 	return
-}
-
-func (rbTree *RbTree[K]) searchLowerNode(node *rbTreeNode[K], key K) *rbTreeNode[K] {
-	var lowerNode *rbTreeNode[K]
-	var curNode *rbTreeNode[K] = node
-	for curNode != rbTree.sentinel {
-		compare := cmp(key, curNode.key)
-		if compare <= 0 {
-			curNode = curNode.left
-			continue
-		}
-		lowerNode = curNode
-		curNode = curNode.right
-	}
-	return lowerNode
 }
 
 // GetLowerThanOrEqual looks for greatest key that is lower than or equal to key in the tree, returning it. It returns (zeroValue, false) if unable to find that key
 func (rbTree *RbTree[K]) GetLowerThanOrEqual(key K) (_ K, _ bool) {
-	var lowerThanOrEqualNode *rbTreeNode[K] = rbTree.searchLowerThanOrEqualNode(rbTree.root, key)
+	var lowerThanOrEqualNode BBSTNode[K] = searchLowerThanOrEqualNode[K](rbTree.root, key, rbTree.cmp, rbTree.sentinel)
 	if lowerThanOrEqualNode != nil {
-		return lowerThanOrEqualNode.key, true
+		return lowerThanOrEqualNode.GetKey(), true
 	}
 	return
 }
 
-func (rbTree *RbTree[K]) searchLowerThanOrEqualNode(node *rbTreeNode[K], key K) *rbTreeNode[K] {
-	var lowerThanOrEqualKeyNode *rbTreeNode[K]
-	var curNode *rbTreeNode[K] = node
-	for curNode != rbTree.sentinel {
-		compare := cmp(key, curNode.key)
-		if compare == 0 {
-			lowerThanOrEqualKeyNode = curNode
-			break
-		}
-		if compare == -1 {
-			curNode = curNode.left
-			continue
-		}
-		lowerThanOrEqualKeyNode = curNode
-		curNode = curNode.right
-	}
-	return lowerThanOrEqualKeyNode
-}
-
-
-// // Has returns true if the given key is in the tree
-// func (rbtree *RbTree[K]) Has(key K) bool {
-// 	var node binaryTreeNode[K] = searchNode[K](rbtree.root, key)
-// 	if node != nil {
-// 		return true
-// 	}
-// 	return false
-// }
-
 // Max returns the largest key in the tree, or (zeroValue, false) if the tree is empty
 func (rbTree *RbTree[K]) Max() (_ K, _ bool) {
-	if rbTree.root == nil {
+	if rbTree.root == rbTree.sentinel {
 		return
 	}
-	var maxNode *rbTreeNode[K] = rbTree.getMaxNode(rbTree.root)
-	return maxNode.key, true
-}
-
-// node can't be nil or rbTree.sentinel
-func (rbTree *RbTree[K]) getMaxNode(node *rbTreeNode[K]) *rbTreeNode[K] {
-	var maxNode *rbTreeNode[K] = node
-	for maxNode.right != rbTree.sentinel {
-		maxNode = maxNode.right
-	}
-	return maxNode
+	var maxNode BBSTNode[K] = getMaxNode[K](rbTree.root, rbTree.sentinel)
+	return maxNode.GetKey(), true
 }
 
 // Min returns the smallest key in the tree, or (zeroValue, false) if the tree is empty
 func (rbTree *RbTree[K]) Min() (_ K, _ bool) {
-	if rbTree.root == nil {
+	if rbTree.root == rbTree.sentinel {
 		return
 	}
-	var minNode *rbTreeNode[K] = rbTree.getMinNode(rbTree.root)
-	return minNode.key, true
-}
-
-// node can't be nil or rbTree.sentinel
-func (rbTree *RbTree[K]) getMinNode(node *rbTreeNode[K]) *rbTreeNode[K] {
-	var minNode *rbTreeNode[K] = node
-	for minNode.left != rbTree.sentinel {
-		minNode = minNode.left
-	}
-	return minNode
+	var minNode BBSTNode[K] = getMinNode[K](rbTree.root, rbTree.sentinel)
+	return minNode.GetKey(), true
 }
 
 // Len returns the number of keys currently in the tree.
@@ -274,9 +141,9 @@ func (rbTree *RbTree[K]) ReplaceOrInsert(key K) (_ K, _ bool) {
 	x := rbTree.root
 	for x != rbTree.sentinel {
 		y = x
-		if key.Less(x.key) {
+		if rbTree.less(key, x.key) {
 			x = x.left
-		} else if x.key.Less(key) {
+		} else if rbTree.less(x.key, key) {
 			x = x.right
 		} else {
 			var prevKey K = x.key
@@ -288,7 +155,7 @@ func (rbTree *RbTree[K]) ReplaceOrInsert(key K) (_ K, _ bool) {
 	z.parent = y
 	if y == rbTree.sentinel {
 		rbTree.root = z
-	} else if key.Less(y.key) {
+	} else if rbTree.less(key, y.key) {
 		y.left = z
 	} else {
 		y.right = z
@@ -296,6 +163,8 @@ func (rbTree *RbTree[K]) ReplaceOrInsert(key K) (_ K, _ bool) {
 	z.left = rbTree.sentinel
 	z.right = rbTree.sentinel
 	z.color = RED
+	z.key = key
+	rbTree.len++
 	rbTree.replaceOrInsertFixup(z)
 	return
 }
@@ -373,37 +242,42 @@ func (rbTree *RbTree[K]) rightRotate(y *rbTreeNode[K]) {
 	y.parent = x
 }
 
-
+// Delete the key in the tree and return its value.
+// If key is not found in the tree, returns (zeroValue, false)
 func (rbTree *RbTree[K]) Delete(key K) (_ K, _ bool) {
-	if rbTree.root == nil {
-		return
-	}
-	var z *rbTreeNode[K] = rbTree.searchNode(rbTree.root, key)
+	var z BBSTNode[K] = searchNode[K](rbTree.root, key, rbTree.cmp, rbTree.sentinel)
 	if z == nil {
 		return
 	}
-	var deletedKey K = z.key
-	rbTree.delete(z)
+	var deletedKey K = z.GetKey()
+	rbTree.delete(z.(*rbTreeNode[K]))
+	rbTree.len--
 	return deletedKey, true
 }
 
+// Delete the maximum key in the tree and return its value.
+// On calling empty tree, returns (zeroValue, false)
 func (rbTree *RbTree[K]) DeleteMax() (_ K, _ bool) {
-	if rbTree.root == nil {
+	if rbTree.root == rbTree.sentinel {
 		return
 	}
-	var z *rbTreeNode[K] = rbTree.getMaxNode(rbTree.root)
+	var z *rbTreeNode[K] = getMaxNode[K](rbTree.root, rbTree.sentinel).(*rbTreeNode[K])
 	var deletedKey K = z.key
 	rbTree.delete(z)
+	rbTree.len--
 	return deletedKey, true
 }
 
+// Delete the minimum key in the tree and return its value.
+// On calling empty tree, returns (zeroValue, false)
 func (rbTree *RbTree[K]) DeleteMin() (_ K, _ bool) {
-	if rbTree.root == nil {
+	if rbTree.root == rbTree.sentinel {
 		return
 	}
-	var z *rbTreeNode[K] = rbTree.getMinNode(rbTree.root)
+	var z *rbTreeNode[K] = getMinNode[K](rbTree.root, rbTree.sentinel).(*rbTreeNode[K])
 	var deletedKey K = z.key
 	rbTree.delete(z)
+	rbTree.len--
 	return deletedKey, true
 }
 
@@ -429,7 +303,7 @@ func (rbTree *RbTree[K]) delete(z *rbTreeNode[K]) {
 		x = z.left
 		rbTree.transplant(z, z.left)
 	} else {
-		y = rbTree.getMinNode(z.right)
+		y = getMinNode[K](z.right, rbTree.sentinel).(*rbTreeNode[K])
 		yOriginalColor = y.color
 		x = y.right
 		if y.parent == z {
@@ -505,47 +379,104 @@ func (rbTree *RbTree[K]) deleteFixup(x *rbTreeNode[K]) {
 	x.color = BLACK
 }
 
-// type RbIterator[K Less[K]] struct {
-// 	cur *rbTreeNode[K]
-// 	rbTree *RbTree[K]
-// }
+type RbIterator[K any] struct {
+	next   *rbTreeNode[K]
+	rbTree *RbTree[K]
+}
 
-// func (rbTree *RbTree[K]) Iterator() *RbIterator[K] {
-// 	// var next *rbTreeNode[K] = rbTree.sentinel
-// 	// if rbTree.root != nil {
-// 	// 	next = rbTree.getMinNode(rbTree.root)
-// 	// }
-// 	return &RbIterator[K] {
-// 		cur: rbTree.sentinel,
-// 		rbTree: rbTree,
-// 	}
-// }
+// Returns an iterator pointing to least key node in the tree.
+// Used to iterate keys in the ascending order.
+func (rbTree *RbTree[K]) Begin() OrderedSetForwardIterator[K] {
+	var next *rbTreeNode[K] = rbTree.root
+	if next != rbTree.sentinel {
+		next = getMinNode[K](rbTree.root, rbTree.sentinel).(*rbTreeNode[K])
+	}
+	return &RbIterator[K]{
+		next:   next,
+		rbTree: rbTree,
+	}
+}
 
-// func (rbTree *RbTree[K]) Begin() *RbIterator[K] {
-// 	if rbTree.root == nil {
-// 		return rbTree.end
-// 	}
-// 	return &RbIterator[K] {
-// 		cur: rbTree.getMinNode(rbTree.root),
-// 		rbTree: rbTree,
-// 	}
-// }
+// Calling Next() moves the iterator to the next least node and returns its key
+// If Next() is called on last key(or greatest key), it returns (zeroValue, false)
+func (rbIterator *RbIterator[K]) Next() (_ K, _ bool) {
+	if rbIterator.next == rbIterator.rbTree.sentinel {
+		return
+	}
+	rbIterator.next = Next[K](rbIterator.next, rbIterator.rbTree.sentinel).(*rbTreeNode[K])
+	if rbIterator.next == rbIterator.rbTree.sentinel {
+		return
+	}
+	return rbIterator.next.key, true
+}
 
-// func (rbTree *RbTree[K]) End() *RbIterator[K] {
-// 	return rbTree.end
-// }
+// Returns the key pointed by iterator. Returns (zeroValue, false) if this is called on empty tree or an iterator has completed traversing all the keys
+func (rbIterator *RbIterator[K]) Key() (_ K, _ bool) {
+	if rbIterator.next != rbIterator.rbTree.sentinel {
+		return rbIterator.next.key, true
+	}
+	return
+}
 
-// func (rbIterator *RbIterator[K]) Next() (*RbIterator[K]) {
-// 	var rbTree *RbTree[K] = rbIterator.rbTree
-// 	var cur *rbTreeNode[K] = rbIterator.cur
-// 	var key K = cur.key
-// 	if cur.right != rbTree.sentinel {
-// 		rbIterator.cur = rbTree.getMinNode(cur.right)
-// 		return key, true
-// 	}
-// 	for cur.parent != rbTree.sentinel && cur == cur.parent.right {
-// 		cur = cur.parent
-// 	}
-// 	rbIterator.cur = cur.parent
-// 	return key, true
-// }
+// Deletes the key the pointed by iterator, moves the iterator to next least key.
+// Returns the next least key if it's present. Otherwise, returns (zeroValue, false)
+// panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
+func (rbIterator *RbIterator[K]) Remove() (_ K, _ bool) {
+	var todelete *rbTreeNode[K] = rbIterator.next
+	nextKey, hasNext := rbIterator.Next()
+	rbIterator.rbTree.delete(todelete)
+	rbIterator.rbTree.len--
+	return nextKey, hasNext
+}
+
+type ReverseRbIterator[K any] struct {
+	prev   *rbTreeNode[K]
+	rbTree *RbTree[K]
+}
+
+// Returns an reverse iterator pointing to greatest key node in the tree
+// Used to iterate keys in the descending order
+func (rbTree *RbTree[K]) Rbegin() OrderedSetReverseIterator[K] {
+	var prev *rbTreeNode[K] = rbTree.root
+	if prev != rbTree.sentinel {
+		prev = getMaxNode[K](rbTree.root, rbTree.sentinel).(*rbTreeNode[K])
+	}
+	return &ReverseRbIterator[K]{
+		prev:   prev,
+		rbTree: rbTree,
+	}
+}
+
+// Calling Prev() moves the reverse iterator to the next greatest node and returns its key
+// If Prev() is called on last key (or smallest key), it returns (zeroValue, false)
+func (reverseRbIterator *ReverseRbIterator[K]) Prev() (_ K, _ bool) {
+	var rbTree *RbTree[K] = reverseRbIterator.rbTree
+	var prev *rbTreeNode[K] = reverseRbIterator.prev
+	if prev == rbTree.sentinel {
+		return
+	}
+	reverseRbIterator.prev = Prev[K](reverseRbIterator.prev, reverseRbIterator.rbTree.sentinel).(*rbTreeNode[K])
+	if reverseRbIterator.prev == rbTree.sentinel {
+		return
+	}
+	return reverseRbIterator.prev.key, true
+}
+
+// Returns the key pointed by reverse iterator. Returns (zeroValue, false) if this is called on empty tree or an iterator has completed traversing all the keys
+func (reverseRbIterator *ReverseRbIterator[K]) Key() (_ K, _ bool) {
+	if reverseRbIterator.prev != reverseRbIterator.rbTree.sentinel {
+		return reverseRbIterator.prev.key, true
+	}
+	return
+}
+
+// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next greatest key.
+// Returns the next greatest key if it's present. Otherwise, returns (zeroValue, false)
+// panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
+func (reverseRbIterator *ReverseRbIterator[K]) Remove() (_ K, _ bool) {
+	var todelete *rbTreeNode[K] = reverseRbIterator.prev
+	key, hasPrev := reverseRbIterator.Prev()
+	reverseRbIterator.rbTree.delete(todelete)
+	reverseRbIterator.rbTree.len--
+	return key, hasPrev
+}
