@@ -429,7 +429,7 @@ type RbAugmentedIterator[K, A any] struct {
 	rbTreeAugmented *RbTreeAugmented[K, A]
 }
 
-// Returns an iterator pointing to least key node in the tree.
+// Returns an iterator pointing to least key node in the tree or to sentinel node if tree is empty.
 // Used to iterate keys in the ascending order.
 func (rbTreeAugmented *RbTreeAugmented[K, A]) Begin() OrderedSetForwardIterator[K] {
 	var next *rbTreeNodeAugmented[K, A] = rbTreeAugmented.root
@@ -442,7 +442,7 @@ func (rbTreeAugmented *RbTreeAugmented[K, A]) Begin() OrderedSetForwardIterator[
 	}
 }
 
-// Calling Next() moves the iterator to the next greater node and returns its key
+// Calling Next() moves the iterator to the next greater node and returns its key.
 // If Next() is called on last key(or greatest key), it returns (zeroValue, false)
 func (rbAugmentedIterator *RbAugmentedIterator[K, A]) Next() (_ K, _ bool) {
 	if rbAugmentedIterator.next == rbAugmentedIterator.rbTreeAugmented.sentinel {
@@ -464,7 +464,7 @@ func (rbAugmentedIterator *RbAugmentedIterator[K, A]) Key() (_ K, _ bool) {
 }
 
 // Deletes the key the pointed by iterator, moves the iterator to next greater key.
-// Returns the next greater key if it's present. Otherwise, returns (zeroValue, false)
+// Returns the next greater key if it's present. Otherwise, returns (zeroValue, false).
 // panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 func (rbAugmentedIterator *RbAugmentedIterator[K, A]) Remove() (_ K, _ bool) {
 	var todelete *rbTreeNodeAugmented[K, A] = rbAugmentedIterator.next
@@ -479,7 +479,7 @@ type ReverseRbAugmentedIterator[K, A any] struct {
 	rbTreeAugmented *RbTreeAugmented[K, A]
 }
 
-// Returns an reverse iterator pointing to greatest key node in the tree
+// Returns an reverse iterator pointing to greatest key node in the tree or to sentinel node if tree is empty.
 // Used to iterate keys in the descending order
 func (rbTreeAugmented *RbTreeAugmented[K, A]) Rbegin() OrderedSetReverseIterator[K] {
 	var prev *rbTreeNodeAugmented[K, A] = rbTreeAugmented.root
@@ -492,7 +492,7 @@ func (rbTreeAugmented *RbTreeAugmented[K, A]) Rbegin() OrderedSetReverseIterator
 	}
 }
 
-// Calling Prev() moves the reverse iterator to the next smaller node and returns its key
+// Calling Prev() moves the reverse iterator to the next smaller node and returns its key.
 // If Prev() is called on last key (or smallest key), it returns (zeroValue, false)
 func (reverseRbAugmentedIterator *ReverseRbAugmentedIterator[K, A]) Prev() (_ K, _ bool) {
 	var rbTreeAugmented *RbTreeAugmented[K, A] = reverseRbAugmentedIterator.rbTreeAugmented
@@ -516,7 +516,7 @@ func (reverseRbAugmentedIterator *ReverseRbAugmentedIterator[K, A]) Key() (_ K, 
 }
 
 // Deletes the key the pointed by reverse iterator, moves the reverse iterator to next smaller key.
-// Returns the next smaller key if it's present. Otherwise, returns (zeroValue, false)
+// Returns the next smaller key if it's present. Otherwise, returns (zeroValue, false).
 // panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 func (reverseRbAugmentedIterator *ReverseRbAugmentedIterator[K, A]) Remove() (_ K, _ bool) {
 	var todelete *rbTreeNodeAugmented[K, A] = reverseRbAugmentedIterator.prev

@@ -162,13 +162,13 @@ func getMinNode[K any](node BBSTNode[K], sentinel BBSTNode[K]) BBSTNode[K] {
 
 // To iterate keys in the ascending order.
 type OrderedSetForwardIterator[K any] interface {
-	// Calling Next() moves the iterator to the next greater node and returns its key
+	// Calling Next() moves the iterator to the next greater node and returns its key.
 	// If Next() is called on last key(or greatest key), it returns (zeroValue, false)
 	Next() (_ K, _ bool)
 	// Returns the key pointed by iterator. Returns (zeroValue, false) if this is called on empty set or an iterator has completed traversing all the keys.
 	Key() (_ K, _ bool)
 	// Deletes the key the pointed by iterator, moves the iterator to next greater key.
-	// Returns the next greater key if it's present. Otherwise, returns (zeroValue, false)
+	// Returns the next greater key if it's present. Otherwise, returns (zeroValue, false).
 	// panics on calling Remove() in empty set or an iterator has completed traversing all the keys
 	Remove() (_ K, _ bool)
 }

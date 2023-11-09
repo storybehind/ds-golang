@@ -158,7 +158,7 @@ type OrderedMapIterator[K, V any] struct {
 	forwardIterator orderedset.OrderedSetForwardIterator[KeyValuePair[K, V]]
 }
 
-// Returns an iterator pointing to least key in the map.
+// Returns an iterator pointing to least key in the map or to sentinel node if map is empty.
 // Used to iterate keys in the ascending order.
 func (om *OrderedMap[K, V]) Begin() *OrderedMapIterator[K, V] {
 	return &OrderedMapIterator[K, V]{
@@ -166,7 +166,7 @@ func (om *OrderedMap[K, V]) Begin() *OrderedMapIterator[K, V] {
 	}
 }
 
-// Calling Next() moves the iterator to the next greater node and returns its KeyValuePair
+// Calling Next() moves the iterator to the next greater key and returns its KeyValuePair.
 // If Next() is called on last key(or greatest key), it returns (zeroValue, false)
 func (omItr *OrderedMapIterator[K, V]) Next() (_ KeyValuePair[K, V], _ bool) {
 	return omItr.forwardIterator.Next()
@@ -177,8 +177,8 @@ func (omItr *OrderedMapIterator[K, V]) Key() (_ KeyValuePair[K, V], _ bool) {
 	return omItr.forwardIterator.Key()
 }
 
-// Deletes the key the pointed by iterator, moves the iterator to next greater node.
-// Returns the next greater KeyValuePair if it's present. Otherwise, returns (zeroValue, false)
+// Deletes the key the pointed by iterator, moves the iterator to next greater key.
+// Returns the next greater KeyValuePair if it's present. Otherwise, returns (zeroValue, false).
 // panics on calling Remove() in empty map or an iterator has completed traversing all the keys
 func (omItr *OrderedMapIterator[K, V]) Remove() (_ KeyValuePair[K, V], _ bool) {
 	return omItr.forwardIterator.Remove()
@@ -188,7 +188,7 @@ type ReverseOrderedMapIterator[K, V any] struct {
 	reverseIterator orderedset.OrderedSetReverseIterator[KeyValuePair[K, V]]
 }
 
-// Returns an reverse iterator pointing to greatest key node in the tree
+// Returns an reverse iterator pointing to greatest key in the map or to sentinel node if map is empty.
 // Used to iterate keys in the descending order
 func (om *OrderedMap[K, V]) Rbegin() *ReverseOrderedMapIterator[K, V] {
 	return &ReverseOrderedMapIterator[K, V]{
@@ -208,7 +208,7 @@ func (omRitr *ReverseOrderedMapIterator[K, V]) Key() (_ KeyValuePair[K, V], _ bo
 }
 
 // Deletes the key the pointed by reverse iterator, moves the reverse iterator to next smaller key.
-// Returns the next smaller KeyValuePair if it's present. Otherwise, returns (zeroValue, false)
+// Returns the next smaller KeyValuePair if it's present. Otherwise, returns (zeroValue, false).
 // panics on calling Remove() in empty map or an iterator has completed traversing all the keys
 func (omRitr *ReverseOrderedMapIterator[K, V]) Remove() (_ KeyValuePair[K, V], _ bool) {
 	return omRitr.reverseIterator.Remove()
