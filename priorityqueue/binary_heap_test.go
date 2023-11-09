@@ -1,12 +1,13 @@
 package priorityqueue_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/storybehind/gocontainer/priorityqueue"
 )
 
-func TestBinaryHeap(t *testing.T) {
+func TestNewBinaryHeap(t *testing.T) {
 	minHeap := priorityqueue.NewBinaryHeap(func(v1, v2 int) bool {
 		return v1 < v2
 	})
@@ -53,6 +54,23 @@ func TestBinaryHeap(t *testing.T) {
 
 	checkRemove(t, minHeap, node2)
 	checkLen(t, minHeap, 0)
+}
+
+func TestBinaryHeapInit(t *testing.T) {
+	initValues := []int{4, 1, 3, 2, 5, 6, 5}
+	bh := priorityqueue.InitBinaryHeap[int](func(v1, v2 int) bool {return v1 < v2}, initValues)
+	sort.Slice(initValues, func (i, j int) bool {
+		return initValues[i] < initValues[j]
+	})
+	bh.Push(0)
+	if v := bh.Pop(); v != 0 {
+		t.Errorf("expected 0; found: %d", v)
+	}
+	for i:=0; bh.Len() > 0; i++ {
+		if v := bh.Pop(); v != initValues[i] {
+			t.Errorf("expected non decreasing order; exp: %d, found: %d", initValues[i], v)
+		}
+	}
 }
 
 func checkLen[V any](t *testing.T, bh *priorityqueue.BinaryHeap[V], len int64) {

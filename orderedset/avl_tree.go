@@ -345,7 +345,7 @@ type AvlIterator[K any] struct {
 	avlTree *AvlTree[K]
 }
 
-// Returns an iterator pointing to smallest key node in the tree.
+// Returns an iterator pointing to smallest key node in the tree or to sentinel node if tree is empty.
 // Used to iterate keys in the ascending order.
 func (avlTree *AvlTree[K]) Begin() OrderedSetForwardIterator[K] {
 	var next *avlTreeNode[K] = avlTree.root
@@ -358,7 +358,7 @@ func (avlTree *AvlTree[K]) Begin() OrderedSetForwardIterator[K] {
 	}
 }
 
-// Calling Next() moves the iterator to the next greater node and returns its key
+// Calling Next() moves the iterator to the next greater node and returns its key.
 // If Next() is called on last key(or greatest key), it returns (zeroValue, false)
 func (avlIterator *AvlIterator[K]) Next() (_ K, _ bool) {
 	if avlIterator.next == avlIterator.avlTree.sentinel {
@@ -395,7 +395,7 @@ type ReverseAvlIterator[K any] struct {
 	avlTree *AvlTree[K]
 }
 
-// Returns an reverse iterator pointing to greatest key node in the tree
+// Returns an reverse iterator pointing to greatest key node in the tree or to sentinel node if tree is empty.
 // Used to iterate keys in the descending order
 func (avlTree *AvlTree[K]) Rbegin() OrderedSetReverseIterator[K] {
 	var prev *avlTreeNode[K] = avlTree.root
@@ -408,7 +408,7 @@ func (avlTree *AvlTree[K]) Rbegin() OrderedSetReverseIterator[K] {
 	}
 }
 
-// Calling Prev() moves the reverse iterator to the next smaller node and returns its key
+// Calling Prev() moves the reverse iterator to the next smaller node and returns its key.
 // If Prev() is called on last key (or smallest key), it returns (zeroValue, false)
 func (reverseAvlIterator *ReverseAvlIterator[K]) Prev() (_ K, _ bool) {
 	if reverseAvlIterator.prev == reverseAvlIterator.avlTree.sentinel {
@@ -430,7 +430,7 @@ func (reverseAvlIterator *ReverseAvlIterator[K]) Key() (_ K, _ bool) {
 }
 
 // Deletes the key the pointed by reverse iterator, moves the reverse iterator to next smaller key.
-// Returns the next smaller key if it's present. Otherwise, returns (zeroValue, false)
+// Returns the next smaller key if it's present. Otherwise, returns (zeroValue, false).
 // panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 func (reverseAvlIterator *ReverseAvlIterator[K]) Remove() (_ K, _ bool) {
 	var todelete *avlTreeNode[K] = reverseAvlIterator.prev

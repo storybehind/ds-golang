@@ -29,6 +29,29 @@ func NewBinaryHeap[V any](priorityFunc func(v1, v2 V) bool) *BinaryHeap[V] {
 	}
 }
 
+// Returns instance of BinaryHeap. 
+// v1 has higher priority than v2 if priorityFunc(v1, v2) returns true
+// Takes O(n) time where n = len(initValues)
+func InitBinaryHeap[V any](priorityFunc func(v1, v2 V) bool, initValues []V) *BinaryHeap[V] {
+	n := len(initValues)
+	bh := &BinaryHeap[V] {
+		nodes: make([]*BinaryHeapNode[V], n+1),
+		priorityFunc: priorityFunc,
+		length: int64(n),
+	}
+	for i, v := range initValues {
+		bh.nodes[i+1] = &BinaryHeapNode[V] {
+			index: int64(i+1),
+			binaryHeap: bh,
+			value: v,
+		}
+	}
+	for i:=n/2; i>=1; i-- {
+		bh.siftDown(int64(i))
+	}
+	return bh
+}
+
 // Insert value into the binary heap and returns node's pointer to pushed value.
 // Takes O(log n) time where n is number of values in the queue.
 func (bh *BinaryHeap[V]) Push(value V) *BinaryHeapNode[V] {
@@ -59,6 +82,7 @@ func (bh *BinaryHeap[V]) Remove(node *BinaryHeapNode[V]) V {
 		return node.value
 	}
 	if bh.length == node.index {
+		bh.nodes[bh.length] = nil
 		bh.nodes = bh.nodes[:bh.length]
 		bh.length--
 
@@ -68,6 +92,7 @@ func (bh *BinaryHeap[V]) Remove(node *BinaryHeapNode[V]) V {
 	}
 	nodeIndex := node.index
 	bh.swapNodes(bh.length, node.index)
+	bh.nodes[bh.length] = nil
 	bh.nodes = bh.nodes[:bh.length]
 	bh.length--
 
