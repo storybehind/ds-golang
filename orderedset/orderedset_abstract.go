@@ -175,8 +175,14 @@ type OrderedSetForwardIterator[K any] interface {
 
 // To iterate keys in the descending order
 type OrderedSetReverseIterator[K any] interface {
+	// Calling Prev() moves the reverse iterator to the next smaller node and returns its key.
+	// If Prev() is called on last key (or smallest key), it returns (zeroValue, false)
 	Prev() (_ K, _ bool)
+	// Returns the key pointed by reverse iterator. Returns (zeroValue, false) if this is called on empty tree or an iterator has completed traversing all the keys
 	Key() (_ K, _ bool)
+	// Deletes the key the pointed by reverse iterator, moves the reverse iterator to next smaller key.
+	// Returns the next smaller key if it's present. Otherwise, returns (zeroValue, false).
+	// panics on calling Remove() in empty tree or an iterator has completed traversing all the keys
 	Remove() (_ K, _ bool)
 }
 
