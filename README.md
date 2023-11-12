@@ -18,10 +18,11 @@ go get -u github.com/storybehind/gocontainer
   * [Augmentation](#Augmentation)
 * [orderedmap](#orderedmap)
 * [priorityqueue](#priorityqueue)
+  * [BinaryHeap](#BinaryHeap)
 
 ### orderedset
 
-orderedset provides interfaces to support insertion, deletion and search keys while maintaining the order of keys.
+orderedset provides containers to support insertion, deletion and search keys while maintaining the order of keys.
 
 #### interfaces
 
@@ -280,11 +281,11 @@ func main() {
 
 #### OrderStatisticsTree
 
-OrderStatisticsTree supports insertion, deletion, search, rank and select operations in O(log n) time where n is number of keys in the tree. Keys can be iterated in ascending (or) descending order in O(n) time. It augments[#Augmentation] node's subtree size.
+OrderStatisticsTree supports insertion, deletion, search, rank and select operations in O(log n) time where n is number of keys in the tree. Keys can be iterated in ascending (or) descending order in O(n) time. It [augments](#Augmentation) node's subtree size.
 
 Rank(key): Determines the index of given key starting from zero. Ex: rank of minimum key will be zero. Returns -1 if key is not found in the tree.
 
-Select(r): Return key element whose rank(key) = r. Ex : for r == 0 , return minimum key. If r >= Len(), return zeroValue, false.
+Select(r): Return key element whose rank(key) = r. Ex : for r = 0 , return minimum key. If r >= Len(), return zeroValue, false.
 
 ```go
 package main
@@ -387,7 +388,7 @@ func main() {
 
 #### Augmentation
 
-RbTreeAugmented maintains unique set of keys and invariant of node's augmented value. Supports insertion, deletion of keys in O(t * log n) time where n is number of keys in the set and t is time required to maintain node's invariant i.e updateAugmentValue time. Search operation takes O(log n) time. Can be embedded to support additional functionalities. [Interval Tree](IntervalTree) is one such example.
+RbTreeAugmented maintains unique set of keys and invariant of node's augmented value. Supports insertion, deletion of keys in O(t * log n) time where n is number of keys in the set and t is time required to maintain node's invariant i.e updateAugmentValue time. Search operation takes O(log n) time. Can be embedded to support additional functionalities. [Interval Tree](#IntervalTree) is one such example.
 
 ##### IntervalTree:
 
@@ -580,6 +581,172 @@ func main() {
 	// Output
 	// interval: {15 23}, has: true
 	// interval: {0 0}, has: false
+}
+```
+
+### orderedmap
+
+orderedmap provides OrderedMap container which maintains key value pairs where all keys are unique. Supports insertion, deletion and search operation in O(log n) time where n is number of keys in the map. OrderedMap can be iterated in ascending (or) descending order of keys in O(n) time. Underlying set structure to store keys can be chosen based on Tag. By calling New(), it defaults to [RbTree](#RbTree) tag.
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/storybehind/gocontainer/orderedmap"
+)
+
+func main() {
+	// Initialize orderedmap
+	// Calling New(), return orderedmap with RbTree as underlying set structure by default
+	om := orderedmap.New[int, string](func(k1, k2 int) bool {return k1 < k2})
+	
+	// To use AvlTree as underlying set structure
+	// om = orderedmap.NewByTag[int, string](func(k1, k2 int) bool {return k1 < k2}, orderedmap.AvlTreeTag)
+
+	// Insery key-value pairs
+	_, isReplaced := om.ReplaceOrInsert(1, "1")
+	fmt.Printf("key: 1, isReplaced: %v\n", isReplaced)
+	_, isReplaced = om.ReplaceOrInsert(2, "2")
+	fmt.Printf("key: 2, isReplaced: %v\n", isReplaced)
+	_, isReplaced = om.ReplaceOrInsert(3, "3")
+	fmt.Printf("key: 3, isReplaced: %v\n", isReplaced)
+	_, isReplaced = om.ReplaceOrInsert(4, "4")
+	fmt.Printf("key: 4, isReplaced: %v\n", isReplaced)
+	_, isReplaced = om.ReplaceOrInsert(5, "5")
+	fmt.Printf("key: 5, isReplaced: %v\n", isReplaced)
+
+	// Search keys
+	kvpair, has := om.Get(1)
+	fmt.Printf("Get 1; key: %v, value: %v, has: %v\n", kvpair.GetKey(), kvpair.GetValue(), has)
+	kvpair, has = om.Get(0)
+	fmt.Printf("Get 0; key: %v, value: %v, has: %v\n", kvpair.GetKey(), kvpair.GetValue(), has)
+	kvpair, has = om.GetGreater(0)
+	fmt.Printf("GetGreater 0; key: %v, value: %v, has: %v\n", kvpair.GetKey(), kvpair.GetValue(), has)
+	
+	// Delete key
+	kvpair, isDeleted := om.Delete(1)
+	fmt.Printf("Delete 1; key: %v, value: %v, isDeleted: %v\n", kvpair.GetKey(), kvpair.GetValue(), isDeleted)
+	
+	// Iterate keys in ascending order
+	forwardItr := om.Begin()
+	for kvpair, has = forwardItr.Key(); has; kvpair, has = forwardItr.Next() {
+		fmt.Printf("forwardItr; key: %v, value: %v\n", kvpair.GetKey(), kvpair.GetValue())
+	}
+
+	// Iterate keys in descending order
+	reverseItr := om.Rbegin()
+	for kvpair, has = reverseItr.Key(); has; kvpair, has = reverseItr.Prev() {
+		fmt.Printf("reverseItr; key: %v, value: %v\n", kvpair.GetKey(), kvpair.GetValue())
+	}
+
+	// Remove if certain condition satisfies
+	forwardItr = om.Begin()
+	for kvpair, has = forwardItr.Key(); has; {
+		if strings.Compare(kvpair.GetValue(), "3") == 0 {
+			kvpair, has = forwardItr.Remove()
+			continue
+		}
+		kvpair, has = forwardItr.Next()
+	}
+	// Iterate keys in ascending order
+	forwardItr = om.Begin()
+	for kvpair, has = forwardItr.Key(); has; kvpair, has = forwardItr.Next() {
+		fmt.Printf("forwardItr2; key: %v, value: %v\n", kvpair.GetKey(), kvpair.GetValue())
+	}
+
+	// Output
+	// key: 1, isReplaced: false
+	// key: 2, isReplaced: false
+	// key: 3, isReplaced: false
+	// key: 4, isReplaced: false
+	// key: 5, isReplaced: false
+	// Get 1; key: 1, value: 1, has: true
+	// Get 0; key: 0, value: , has: false
+	// GetGreater 0; key: 1, value: 1, has: true
+	// Delete 1; key: 1, value: 1, isDeleted: true
+	// forwardItr; key: 2, value: 2
+	// forwardItr; key: 3, value: 3
+	// forwardItr; key: 4, value: 4
+	// forwardItr; key: 5, value: 5
+	// reverseItr; key: 5, value: 5
+	// reverseItr; key: 4, value: 4
+	// reverseItr; key: 3, value: 3
+	// reverseItr; key: 2, value: 2
+	// forwardItr2; key: 2, value: 2
+	// forwardItr2; key: 4, value: 4
+	// forwardItr2; key: 5, value: 5
+}
+```
+
+### priorityqueue
+
+priorityqueue provides containers in which elements with high priority are served before elements with low priority.
+
+Containers: [Binary Heap](#BinaryHeap)
+
+#### BinaryHeap
+
+BinaryHeap[V] provides Push, Pop, Top, Update and Remove operations. 
+
+Can be initialized with
+
+1) empty queue using NewBinaryHeap. Takes O(1) time.
+
+2) some initial values using InitBinaryHeap. Takes O(n) time where n is the number of initial values.
+
+_Operations:_
+
+Push(V) *BinaryHeapNode[V] - Inserts given value to the container and returns its node pointer. Takes O(log n) time where n is the number of values in the container.
+
+Pop() V - Removes highest priority value from the container and returns it. Takes O(log n) time where n is the number of values in the container.
+
+Top() *BinaryHeapNode[V]- Returns node's pointer to highest priority value in the container. Takes O(1) time.
+
+Remove(*BinaryHeapNode[V]) V - Deletes given node's pointer in binary heap and returns its value. Has no effect if node is already removed. Takes O(log n) time where n is number of values in the queue.
+
+Update(*BinaryHeapNode[V], V) - Update given node's value to new given value. Has no effect if node is already removed. Takes O(log n) time where n is number of values in the queue.
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/storybehind/gocontainer/priorityqueue"
+)
+
+func main() {
+	// Initialize
+	// v1 has higher priority than v2 if priorityFunc(v1, v2) return true
+	pq := priorityqueue.NewBinaryHeap[int](func(v1, v2 int) bool {return v1 < v2})
+
+	// Initialize with initial values
+	// pq := priorityqueue.InitBinaryHeap[int](func(v1, v2 int) bool {return v1 < v2}, []int{1})
+	
+	// Push value
+	ptr1 := pq.Push(1)
+	ptr2 := pq.Push(2)
+	fmt.Printf("MinValue: %v\n", pq.Top().GetValue())
+
+	// Update value
+	pq.Update(ptr1, 3)
+	fmt.Printf("MinValue: %v\n", pq.Top().GetValue())
+
+	// Remove
+	pq.Remove(ptr2)
+
+	// Empty queue in non decreasing order
+	for pq.Len() > 0 {
+		fmt.Printf("%d\n", pq.Pop())
+	}
+
+	// Output
+	// MinValue: 1
+	// MinValue: 2
+	// 3
 }
 ```
 
