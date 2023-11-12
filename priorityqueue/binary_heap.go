@@ -76,9 +76,9 @@ func (bh *BinaryHeap[V]) Pop() V {
 	return bh.Remove(bh.nodes[1])
 }
 
-// Deletes node in binary heap. Takes O(log n) time where n is number of values in the queue.
+// Deletes node in binary heap. Has no effect if node is already removed. Takes O(log n) time where n is number of values in the queue.
 func (bh *BinaryHeap[V]) Remove(node *BinaryHeapNode[V]) V {
-	if node.binaryHeap != bh {
+	if node.binaryHeap == nil {
 		return node.value
 	}
 	if bh.length == node.index {
@@ -103,9 +103,9 @@ func (bh *BinaryHeap[V]) Remove(node *BinaryHeapNode[V]) V {
 	return node.value
 }
 
-// Update node's value to newValue. Takes O(log n) time where n is number of values in the queue.
+// Update node's value to newValue. Has no effect if node is already removed. Takes O(log n) time where n is number of values in the queue.
 func (bh *BinaryHeap[V]) Update(node *BinaryHeapNode[V], newValue V) {
-	if node.binaryHeap != bh {
+	if node.binaryHeap == nil {
 		return
 	}
 	node.value = newValue
